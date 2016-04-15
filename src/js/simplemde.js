@@ -10,7 +10,18 @@ require("codemirror/addon/display/placeholder.js");
 require("codemirror/mode/gfm/gfm.js");
 require("codemirror/mode/xml/xml.js");
 require("spell-checker");
-var marked = require("marked");
+//var marked = require("marked");
+var MarkdownIt = require("markdown-it"),
+	markdownSub = require("markdown-it-sub"),
+	markdownSup = require("markdown-it-sup"),
+	mdFootnote = require("markdown-it-footnote"),
+	mdDeflist = require("markdown-it-deflist"),
+	mdAbbr = require("markdown-it-abbr"),
+	mdContainer = require("markdown-it-container"),
+	mdInserted = require("markdown-it-ins"),
+	mdMarked = require("markdown-it-mark"),
+	mdAttr = require("markdown-it-attrs"),
+	marked;
 
 
 // Some variables
@@ -727,6 +738,7 @@ function toggleSideBySide(editor) {
 
 	var sideBySideRenderingFunction = function() {
 		preview.innerHTML = editor.options.previewRender(editor.value(), preview);
+		window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, preview]);
 	};
 
 	if(!cm.sideBySideRenderingFunction) {
@@ -777,6 +789,7 @@ function togglePreview(editor) {
 		}
 	}
 	preview.innerHTML = editor.options.previewRender(editor.value(), preview);
+	window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, preview]);
 
 	// Turn off side by side if needed
 	var sidebyside = cm.getWrapperElement().nextSibling;
@@ -1386,9 +1399,13 @@ function SimpleMDE(options) {
  * Default markdown render.
  */
 SimpleMDE.prototype.markdown = function(text) {
-	if(marked) {
+	if(MarkdownIt) {
+		//	if(marked) {
 		// Initialize
-		var markedOptions = {};
+		var markedOptions = {
+			linkify: true,
+			typographer: true
+		};
 
 
 		// Update options
@@ -1406,11 +1423,23 @@ SimpleMDE.prototype.markdown = function(text) {
 
 
 		// Set options
-		marked.setOptions(markedOptions);
+		//marked.setOptions(markedOptions);
+		marked = new MarkdownIt(markedOptions);
 
+
+		marked.use(markdownSub)
+			.use(markdownSup)
+			.use(mdDeflist)
+			.use(mdFootnote)
+			.use(mdAbbr)
+			.use(mdContainer, "warning")
+			.use(mdInserted)
+			.use(mdMarked)
+			.use(mdAttr);
 
 		// Return
-		return marked(text);
+		//return marked(text);
+		return marked.render(text);
 	}
 };
 
@@ -1508,6 +1537,7 @@ SimpleMDE.prototype.render = function(el) {
 	this.gui.sideBySide = this.createSideBySide();
 
 	this._rendered = this.element;
+
 };
 
 // Safari, in Private Browsing Mode, looks like it supports localStorage but all calls to setItem throw QuotaExceededError. We're going to detect this and set a variable accordingly.
