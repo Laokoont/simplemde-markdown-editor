@@ -21465,6 +21465,7 @@ function toggleSideBySide(editor) {
 			if(!cm.getOption("fullScreen"))
 				toggleFullScreen(editor);
 			preview.className += " editor-preview-active-side";
+			window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, preview]);
 		}, 1);
 		toolbarButton.className += " active";
 		wrapper.className += " CodeMirror-sided";
